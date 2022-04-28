@@ -7,30 +7,30 @@ Goal is to not use a pretrained model and use my own
 import keras
 from keras.applications.resnet import ResNet50
 from keras.models import Model
-from keras.layers import Conv2D, concatenate, BatchNormalization, Lambda, Input, ZeroPadding2D, Activation
 from keras import regularizers
 from keras.losses import Loss
 import keras.backend as K
 import tensorflow as tf
 import numpy as np
 
+
 RESIZE_FACTOR = 2
 def resize_bilinear(x):
-    return tf.image.resize_bilinear(
-        x, 
-        size=[K.shape(x)[1] * RESIZE_FACTOR, K.shape(x)[2] * RESIZE_FACTOR]
-    )
+    return tf.image.resize_bilinear(x, size=[K.shape(x)[1] * RESIZE_FACTOR, K.shape(x)[2] * RESIZE_FACTOR])
+
 
 def resize_output_shape(in_shape):
     shape = list(in_shape)
     if len(shape) != 4:
-        return
+        raise ValueError("len(shape) must match the number of channels [4]")
     shape[1] *= RESIZE_FACTOR
     shape[2] *= RESIZE_FACTOR
     return tuple(shape)
 
+
 EPSILON = 1e-5
 MOMENTUM = 0.997
+
 
 # EAST Model
 resnet = tf.keras.applications.ResNet50(input_shape=(512, 512, 3), weights='imagenet', include_top=False)
@@ -125,10 +125,9 @@ class TotalLoss(Loss):
         r_loss = rbox_loss(y_true_cls, y_true_geo, y_pred_geo, train_mask)
         return 100 * (r_loss + d_loss)
 
-"""
-Current error compiling
-"""
 model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
               loss=TotalLoss())
 
 # model.evaluate()
+
+# model.save("east_text_detection.pb")
