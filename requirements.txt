@@ -8,3 +8,5 @@ argparse
 tensorflow
 keras
 keras-applications
+gTTS
+playsound

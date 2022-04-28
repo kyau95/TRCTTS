@@ -3,36 +3,35 @@ import numpy as np
 import cv2
 import pytesseract # text recognition lib
 
-"""
-Currently using a pretrained model to evaluate
-And then draw the ROI bounding boxes which 
-then will be used with PyTesseract to extract the text
-"""
-
 # argument dict for ease of updates
 args = {
-    "image": "./images/img_2.jpg",
+    "image": "./images/test/img_3.jpg",
     "east": "./east_text_detection.pb",
     "min_confidence": 0.5,
     "width": 320,
     "height": 320
 }
 
+"""
+training model to evaluate then draw the ROI bounding boxes 
+then will be used with PyTesseract to extract the text
+gTTS will then take the extracted text and read it out
+"""
 image = cv2.imread(args["image"])
 orig = image.copy()
 (height, width) = image.shape[:2]
 
 # set the new width and height and then determine the ratio in change
 # for both the width and height
-(newWidth, newHeight) = (args["width"], args["height"])
-ratioWidth, ratioHeight = width / float(newWidth), height / float(newHeight)
+(new_width, new_height) = (args["width"], args["height"])
+ratio_width, ratio_height = width / float(new_width), height / float(new_height)
 
 # resize the image and grab the new image dimensions
-image = cv2.resize(image, (newWidth, newHeight))
+image = cv2.resize(image, (new_width, new_height))
 (height, width) = image.shape[:2]
 
 # two output layers
-layerNames = [
+layer_names = [
 	"feature_fusion/Conv_7/Sigmoid",
 	"feature_fusion/concat_3"
  ]
@@ -43,16 +42,16 @@ net = cv2.dnn.readNet(args["east"])
 blob = cv2.dnn.blobFromImage(image, 1.0, (width, height),
 	(123.68, 116.78, 103.94), swapRB=True, crop=False)
 net.setInput(blob)
-(scores, geometry) = net.forward(layerNames)
+(scores, geometry) = net.forward(layer_names)
 
 # grab the number of rows and columns from the scores volume, then
 # initialize our set of bounding box rectangles and corresponding
 # confidence scores
-(numRows, numCols) = scores.shape[2:4]
+(rows, cols) = scores.shape[2:4]
 rects = []
 confidences = []
 # loop over the number of rows
-for y in range(0, numRows):
+for y in range(0, rows):
 	# extract the scores (probabilities), followed by the geometrical
 	# data used to derive potential bounding box coordinates that
 	# surround text
@@ -64,7 +63,7 @@ for y in range(0, numRows):
 	anglesData = geometry[0, 4, y]
  
  	# loop over the number of columns
-	for x in range(0, numCols):
+	for x in range(0, cols):
 		# if our score does not have sufficient probability, ignore it
 		if scoresData[x] < args["min_confidence"]:
 			continue
@@ -93,10 +92,10 @@ for y in range(0, numRows):
 boxes = non_max_suppression(np.array(rects), probs=confidences)
 # loop over the bounding boxes
 for (startX, startY, endX, endY) in boxes:
-	startX = int(startX * ratioWidth)
-	startY = int(startY * ratioHeight)
-	endX = int(endX * ratioWidth)
-	endY = int(endY * ratioHeight)
+	startX = int(startX * ratio_width)
+	startY = int(startY * ratio_height)
+	endX = int(endX * ratio_width)
+	endY = int(endY * ratio_height)
  
 	# draw the bounding box on the image
 	cv2.rectangle(orig, (startX, startY), (endX, endY), (0, 255, 0), 2)
