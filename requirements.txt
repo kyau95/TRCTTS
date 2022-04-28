@@ -1,0 +1,10 @@
+numpy
+opencv-python
+imutils
+matplotlib
+basenet
+pytesseract
+argparse
+tensorflow
+keras
+keras-applications

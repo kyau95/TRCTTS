@@ -1,0 +1,4 @@
+venv
+
+# ignore training and test datasets
+images/*
