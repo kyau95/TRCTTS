@@ -10,3 +10,8 @@ keras
 keras-applications
 gTTS
 playsound
+swtloc
+Shapely
+pillow
+pandas
+tqdm
